@@ -1,0 +1,16 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: origo-api
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8081:8080"
+    networks:
+      - origo-admin_origo-network
+
+networks:
+  origo-admin_origo-network:
+    external: true
