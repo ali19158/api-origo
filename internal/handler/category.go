@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -52,7 +53,7 @@ func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	cats, err := h.svc.List(r.Context())
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to list categories")
+		writeError(w, http.StatusInternalServerError, fmt.Errorf("failed to list categories: %w", err).Error())
 		return
 	}
 

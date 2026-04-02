@@ -57,7 +57,7 @@ func (r *CategoryRepository) List(ctx context.Context) ([]models.Category, error
 	              AND m.collection_name = 'preview'
 	          WHERE c.is_active = 1
 	              AND c.deleted_at IS NULL
-	          ORDER BY c.name`
+	          ORDER BY c.id`
 
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
