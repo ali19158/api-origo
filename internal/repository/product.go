@@ -31,9 +31,10 @@ func (r *ProductRepository) Create(ctx context.Context, p *models.Product) error
 
 func (r *ProductRepository) GetByID(ctx context.Context, id int64) (*models.Product, error) {
 	var p models.Product
-	query := `SELECT p.id, p.name, p.sku, p.slug, p.price, p.brand_id, p.category_id,
+	query := `SELECT p.id, p.name, p.sku, p.slug, p.price, p.brand_id,b.name as brand_name, p.category_id,
 	           p.content, p.created_at, p.description, p.old_price
 	    FROM products p
+		left join brands b on b.id=p.brand_id
 	    WHERE p.id = $1 AND p.is_active = true AND p.deleted_at IS NULL`
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
