@@ -36,7 +36,7 @@ func main() {
 
 	// Services
 	userSvc := service.NewUserService(userRepo, cfg.JWT)
-	productSvc := service.NewProductService(productRepo)
+	productSvc := service.NewProductService(productRepo, cfg.AdminURL)
 	orderSvc := service.NewOrderService(orderRepo, productRepo)
 	categorySvc := service.NewCategoryService(categoryRepo, cfg.AdminURL)
 
