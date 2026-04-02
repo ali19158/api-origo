@@ -18,8 +18,13 @@ type Product struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	BrandName json.RawMessage `json:"brand_name"`
+	Sku string `json:"sku"`
+	BrandId int64 `json:"brand_id"`
+	Content string `json:"content"`
+	OldPrice json.RawMessage `json:"old_price"`
+	FileName string `json:"file_name"`
+	
 }
-
 type ProductFilter struct {
 	CategoryID *int64
 	MinPrice   *float64

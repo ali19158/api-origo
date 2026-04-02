@@ -38,7 +38,7 @@ where m.model_id=p.id and m.model_type='App\Models\Product' and p.is_active=true
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&p.ID, &p.Name, &p.Sku, &p.Slug, &p.Price, &p.BrandId, &p.CategoryID,
-		&p.Content, &p.CreatedAt, &p.Description, &p.OldPrice, &p.FileName
+		&p.Content, &p.CreatedAt, &p.Description, &p.OldPrice, &p.FileName,
 	)
 	if err != nil {
 		return nil, err

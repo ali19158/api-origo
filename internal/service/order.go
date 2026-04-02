@@ -19,40 +19,40 @@ func NewOrderService(orderRepo *repository.OrderRepository, productRepo *reposit
 	return &OrderService{orderRepo: orderRepo, productRepo: productRepo}
 }
 
-func (s *OrderService) Create(ctx context.Context, userID int64, req models.CreateOrderRequest) (*models.Order, error) {
-	var totalPrice float64
-	var items []models.OrderItem
+// func (s *OrderService) Create(ctx context.Context, userID int64, req models.CreateOrderRequest) (*models.Order, error) {
+// 	var totalPrice float64
+// 	var items []models.OrderItem
 
-	for _, ri := range req.Items {
-		product, err := s.productRepo.GetByID(ctx, ri.ProductID)
-		if err != nil {
-			return nil, err
-		}
-		if product.Stock < ri.Quantity {
-			return nil, ErrInsufficientStock
-		}
-		items = append(items, models.OrderItem{
-			ProductID: ri.ProductID,
-			Quantity:  ri.Quantity,
-			Price:     product.Price,
-		})
-		totalPrice += product.Price * float64(ri.Quantity)
-	}
+// 	for _, ri := range req.Items {
+// 		product, err := s.productRepo.GetByID(ctx, ri.ProductID)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		if product.Stock < ri.Quantity {
+// 			return nil, ErrInsufficientStock
+// 		}
+// 		items = append(items, models.OrderItem{
+// 			ProductID: ri.ProductID,
+// 			Quantity:  ri.Quantity,
+// 			Price:     product.Price,
+// 		})
+// 		totalPrice += product.Price * float64(ri.Quantity)
+// 	}
 
-	order := &models.Order{
-		UserID:     userID,
-		Status:     models.OrderStatusPending,
-		TotalPrice: totalPrice,
-		Address:    req.Address,
-		Items:      items,
-	}
+// 	order := &models.Order{
+// 		UserID:     userID,
+// 		Status:     models.OrderStatusPending,
+// 		TotalPrice: totalPrice,
+// 		Address:    req.Address,
+// 		Items:      items,
+// 	}
 
-	if err := s.orderRepo.Create(ctx, order); err != nil {
-		return nil, err
-	}
+// 	if err := s.orderRepo.Create(ctx, order); err != nil {
+// 		return nil, err
+// 	}
 
-	return order, nil
-}
+// 	return order, nil
+// }
 
 func (s *OrderService) GetByID(ctx context.Context, id int64) (*models.Order, error) {
 	return s.orderRepo.GetByID(ctx, id)

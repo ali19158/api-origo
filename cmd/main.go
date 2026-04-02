@@ -31,23 +31,23 @@ func main() {
 	// Repositories
 	userRepo := repository.NewUserRepository(pool)
 	productRepo := repository.NewProductRepository(pool)
-	orderRepo := repository.NewOrderRepository(pool)
+	//orderRepo := repository.NewOrderRepository(pool)
 	categoryRepo := repository.NewCategoryRepository(pool)
 
 	// Services
 	userSvc := service.NewUserService(userRepo, cfg.JWT)
 	productSvc := service.NewProductService(productRepo, cfg.AdminURL)
-	orderSvc := service.NewOrderService(orderRepo, productRepo)
+	//orderSvc := service.NewOrderService(orderRepo, productRepo)
 	categorySvc := service.NewCategoryService(categoryRepo, cfg.AdminURL)
 
 	// Handlers
 	userH := handler.NewUserHandler(userSvc)
 	productH := handler.NewProductHandler(productSvc)
-	orderH := handler.NewOrderHandler(orderSvc)
+	//orderH := handler.NewOrderHandler(orderSvc)
 	categoryH := handler.NewCategoryHandler(categorySvc)
 
 	// Router
-	r := router.New(cfg.JWT.Secret, userH, productH, orderH, categoryH)
+	r := router.New(cfg.JWT.Secret, userH, productH, categoryH)
 
 	// Start server
 	addr := fmt.Sprintf(":%s", cfg.Server.Port)

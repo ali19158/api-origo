@@ -13,7 +13,7 @@ func New(
 	jwtSecret string,
 	userH *handler.UserHandler,
 	productH *handler.ProductHandler,
-	orderH *handler.OrderHandler,
+	//orderH *handler.OrderHandler,
 	categoryH *handler.CategoryHandler,
 ) *chi.Mux {
 	r := chi.NewRouter()
@@ -46,9 +46,9 @@ func New(
 			r.Use(middleware.Auth(jwtSecret))
 
 			// Orders (customer)
-			r.Post("/orders", orderH.Create)
-			r.Get("/orders/my", orderH.ListMy)
-			r.Get("/orders/{id}", orderH.GetByID)
+			//r.Post("/orders", orderH.Create)
+			//r.Get("/orders/my", orderH.ListMy)
+			//r.Get("/orders/{id}", orderH.GetByID)
 
 			// Admin routes
 			r.Group(func(r chi.Router) {
@@ -62,7 +62,7 @@ func New(
 				r.Put("/categories/{id}", categoryH.Update)
 				r.Delete("/categories/{id}", categoryH.Delete)
 
-				r.Put("/orders/{id}/status", orderH.UpdateStatus)
+				//r.Put("/orders/{id}/status", orderH.UpdateStatus)
 			})
 		})
 	})
