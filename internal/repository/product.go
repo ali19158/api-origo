@@ -60,7 +60,7 @@ func (r *ProductRepository) getProductImages(ctx context.Context, productIDs []i
 		return []string{}, nil
 	}
 
-	query := `SELECT 'https://admin.origo.kz/storage/' || m.model_id || '/' || m.file_name
+	query := `SELECT 'https://admin.origo.kz/storage/' || m.id || '/' || m.file_name
 	    FROM media m
 	    WHERE m.model_id = ANY($1)
 	      AND m.model_type = 'App\Models\Product'
@@ -93,7 +93,7 @@ func (r *ProductRepository) getProductImagesMap(ctx context.Context, productIDs 
 		return result, nil
 	}
 
-	query := `SELECT m.model_id, 'https://admin.origo.kz/storage/' || m.model_id || '/' || m.file_name
+	query := `SELECT m.model_id, 'https://admin.origo.kz/storage/' || m.id || '/' || m.file_name
 	    FROM media m
 	    WHERE m.model_id = ANY($1)
 	      AND m.model_type = 'App\Models\Product'
