@@ -12,6 +12,7 @@ type Category struct {
 	Description   json.RawMessage `json:"description"`
 	ParentID      *int64          `json:"parent_id,omitempty"`
 	Preview       *string         `json:"preview,omitempty"`
+	IsSoon        bool            `json:"is_soon"`
 	CreatedAt     time.Time       `json:"created_at"`
 	MediaID       *int64          `json:"-"`
 	MediaFileName *string         `json:"-"`
