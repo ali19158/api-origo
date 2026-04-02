@@ -100,9 +100,9 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
          LEFT JOIN media m ON m.model_id = p.id
     AND m.model_type = 'App\Models\Product'
     AND m.collection_name = 'preview'
-%s and c.is_active = true
-  AND c.deleted_at IS NULL
-ORDER BY ccreated_at DESC LIMIT $%d OFFSET $%d`,
+%s and p.is_active = true
+  AND p.deleted_at IS NULL
+ORDER BY p.created_at DESC LIMIT $%d OFFSET $%d`,
 		where, argIdx, argIdx+1,
 	)
 	args = append(args, f.PageSize, offset)
