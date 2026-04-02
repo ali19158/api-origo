@@ -38,7 +38,7 @@ func (r *ProductRepository) GetByID(ctx context.Context, id int64) (*models.Prod
 	    WHERE p.id = $1 AND p.is_active = true AND p.deleted_at IS NULL`
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
-		&p.ID, &p.Name, &p.Sku, &p.Slug, &p.Price, &p.BrandId, &p.CategoryID,
+		&p.ID, &p.Name, &p.Sku, &p.Slug, &p.Price, &p.BrandId,&p.BrandName, &p.CategoryID,
 		&p.Content, &p.CreatedAt, &p.Description, &p.OldPrice,
 	)
 	if err != nil {
