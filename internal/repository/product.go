@@ -144,13 +144,13 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 		argIdx++
 	}
 
-	// Always filter active and non-deleted
-	conditions = append(conditions, "p.is_active = true", "p.deleted_at IS NULL")
-
-	where := "WHERE " + strings.Join(conditions, " AND ")
+	extraWhere := ""
+	if len(conditions) > 0 {
+		extraWhere = " AND " + strings.Join(conditions, " AND ")
+	}
 
 	// Count total
-	countQuery := "SELECT COUNT(*) FROM products p " + where
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM products p WHERE p.is_active = true AND p.deleted_at IS NULL%s", extraWhere)
 	var total int
 	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, err
@@ -165,11 +165,11 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 	}
 	offset := (f.Page - 1) * f.PageSize
 	dataQuery := fmt.Sprintf(
-		`SELECT p.id, p.name, p.slug, p.description, p.price, p.category_id, p.created_at
+		`SELECT p.id, p.name, p.slug, p.description, p.price, p.category_id, p.is_active, p.created_at
 		 FROM products p
-		 %s
+		 WHERE p.is_active = true AND p.deleted_at IS NULL%s
 		 ORDER BY p.created_at DESC LIMIT $%d OFFSET $%d`,
-		where, argIdx, argIdx+1,
+		extraWhere, argIdx, argIdx+1,
 	)
 	args = append(args, f.PageSize, offset)
 
