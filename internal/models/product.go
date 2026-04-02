@@ -9,7 +9,7 @@ type Product struct {
 	ID          int64     `json:"id"`
 	Name        json.RawMessage    `json:"name"`
 	Slug        string    `json:"slug"`
-	Description string    `json:"description"`
+	Description *string    `json:"description"`
 	Price       json.RawMessage   `json:"price"`
 	Stock       int       `json:"stock"`
 	CategoryID  int64     `json:"category_id"`
