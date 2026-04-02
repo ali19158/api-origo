@@ -17,7 +17,7 @@ type Product struct {
 	IsActive    bool             `json:"is_active"`
 	CreatedAt   time.Time        `json:"created_at"`
 	UpdatedAt   time.Time        `json:"updated_at"`
-	BrandName   json.RawMessage  `json:"brand_name"`
+	BrandName   *json.RawMessage  `json:"brand_name"`
 	Sku         string           `json:"sku"`
 	BrandId     int64            `json:"brand_id"`
 	Content     *json.RawMessage           `json:"content"`
