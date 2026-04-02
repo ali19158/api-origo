@@ -2,17 +2,19 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/online-shop/internal/models"
 )
 
 type CategoryRepository struct {
-	db *pgxpool.Pool
+	db       *pgxpool.Pool
+	adminURL string
 }
 
-func NewCategoryRepository(db *pgxpool.Pool) *CategoryRepository {
-	return &CategoryRepository{db: db}
+func NewCategoryRepository(db *pgxpool.Pool, adminURL string) *CategoryRepository {
+	return &CategoryRepository{db: db, adminURL: adminURL}
 }
 
 func (r *CategoryRepository) Create(ctx context.Context, c *models.Category) error {
@@ -25,17 +27,44 @@ func (r *CategoryRepository) Create(ctx context.Context, c *models.Category) err
 
 func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*models.Category, error) {
 	var c models.Category
-	query := `SELECT id, name, slug, parent_id, created_at FROM categories WHERE id = $1`
+	var mediaID *int64
+	var mediaFileName *string
 
-	err := r.db.QueryRow(ctx, query, id).Scan(&c.ID, &c.Name, &c.Slug, &c.ParentID, &c.CreatedAt)
+	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at,
+	                 m.id, m.file_name
+	          FROM categories c
+	          LEFT JOIN media m ON m.model_id = c.id
+	              AND m.model_type = 'App\Models\Category'
+	              AND m.collection_name = 'preview'
+	          WHERE c.id = $1
+	          LIMIT 1`
+
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&c.ID, &c.Name, &c.Slug, &c.ParentID, &c.CreatedAt,
+		&mediaID, &mediaFileName,
+	)
 	if err != nil {
 		return nil, err
 	}
+
+	if mediaID != nil && mediaFileName != nil {
+		url := fmt.Sprintf("%s/storage/%d/%s", r.adminURL, *mediaID, *mediaFileName)
+		c.Preview = &url
+	}
+
 	return &c, nil
 }
 
 func (r *CategoryRepository) List(ctx context.Context) ([]models.Category, error) {
-	rows, err := r.db.Query(ctx, `SELECT id, name, slug, parent_id, created_at FROM categories ORDER BY name`)
+	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at,
+	                 m.id, m.file_name
+	          FROM categories c
+	          LEFT JOIN media m ON m.model_id = c.id
+	              AND m.model_type = 'App\Models\Category'
+	              AND m.collection_name = 'preview'
+	          ORDER BY c.name`
+
+	rows, err := r.db.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -44,9 +73,21 @@ func (r *CategoryRepository) List(ctx context.Context) ([]models.Category, error
 	var categories []models.Category
 	for rows.Next() {
 		var c models.Category
-		if err := rows.Scan(&c.ID, &c.Name, &c.Slug, &c.ParentID, &c.CreatedAt); err != nil {
+		var mediaID *int64
+		var mediaFileName *string
+
+		if err := rows.Scan(
+			&c.ID, &c.Name, &c.Slug, &c.ParentID, &c.CreatedAt,
+			&mediaID, &mediaFileName,
+		); err != nil {
 			return nil, err
 		}
+
+		if mediaID != nil && mediaFileName != nil {
+			url := fmt.Sprintf("%s/storage/%d/%s", r.adminURL, *mediaID, *mediaFileName)
+			c.Preview = &url
+		}
+
 		categories = append(categories, c)
 	}
 

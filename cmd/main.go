@@ -32,7 +32,7 @@ func main() {
 	userRepo := repository.NewUserRepository(pool)
 	productRepo := repository.NewProductRepository(pool)
 	orderRepo := repository.NewOrderRepository(pool)
-	categoryRepo := repository.NewCategoryRepository(pool)
+	categoryRepo := repository.NewCategoryRepository(pool, cfg.AdminURL)
 
 	// Services
 	userSvc := service.NewUserService(userRepo, cfg.JWT)

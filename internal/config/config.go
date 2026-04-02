@@ -13,6 +13,7 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	JWT      JWTConfig
+	AdminURL string
 }
 
 type ServerConfig struct {
@@ -61,6 +62,7 @@ func Load() (*Config, error) {
 			Secret:          getEnv("JWT_SECRET", "change-me"),
 			ExpirationHours: expHours,
 		},
+		AdminURL: getEnv("ADMIN_URL", "https://admin.origo.kz"),
 	}, nil
 }
 
