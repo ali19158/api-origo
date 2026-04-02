@@ -185,7 +185,7 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 		var p models.Product
 		if err := rows.Scan(
 			&p.ID, &p.Name, &p.Slug, &p.Description, &p.Price,
-			&p.CategoryID, &p.CreatedAt,
+			&p.CategoryID, &p.IsActive, &p.CreatedAt,
 		); err != nil {
 			return nil, 0, err
 		}
