@@ -33,7 +33,7 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*models.Cat
 	              AND m.model_type = 'App\Models\Category'
 	              AND m.collection_name = 'preview'
 	          WHERE c.id = $1
-	              AND c.is_active = 1
+	              AND c.is_active = true
 	              AND c.deleted_at IS NULL
 	          LIMIT 1`
 
@@ -55,7 +55,7 @@ func (r *CategoryRepository) List(ctx context.Context) ([]models.Category, error
 	          LEFT JOIN media m ON m.model_id = c.id
 	              AND m.model_type = 'App\Models\Category'
 	              AND m.collection_name = 'preview'
-	          WHERE c.is_active = 1
+	          WHERE c.is_active = true
 	              AND c.deleted_at IS NULL
 	          ORDER BY c.id`
 
