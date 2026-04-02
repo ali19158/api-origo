@@ -20,8 +20,8 @@ type Product struct {
 	BrandName   json.RawMessage  `json:"brand_name"`
 	Sku         string           `json:"sku"`
 	BrandId     int64            `json:"brand_id"`
-	Content     string           `json:"content"`
-	OldPrice    json.RawMessage  `json:"old_price"`
+	Content     *json.RawMessage           `json:"content"`
+	OldPrice    *json.RawMessage  `json:"old_price"`
 	FileName    string           `json:"file_name"`
 	Images      []string         `json:"images"`
 }
