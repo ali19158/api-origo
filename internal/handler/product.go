@@ -2,9 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
-	"fmt"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/online-shop/internal/models"
 	"github.com/online-shop/internal/service"
@@ -42,7 +43,7 @@ func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	product, err := h.svc.GetByID(r.Context(), id)
 	if err != nil {
-		writeError(w, http.StatusNotFound, "product not found")
+		writeError(w, http.StatusNotFound, fmt.Errorf("failed to find product by id: %v", err).Error())
 		return
 	}
 
@@ -79,9 +80,9 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"products": products,
-		"total":    total,
-		"page":     filter.Page,
+		"products":  products,
+		"total":     total,
+		"page":      filter.Page,
 		"page_size": filter.PageSize,
 	})
 }
