@@ -31,12 +31,14 @@ func (r *ProductRepository) Create(ctx context.Context, p *models.Product) error
 
 func (r *ProductRepository) GetByID(ctx context.Context, id int64) (*models.Product, error) {
 	var p models.Product
-	query := `SELECT id, name, slug, description, price, stock, category_id, image_url, is_active, created_at, updated_at
-	           FROM products WHERE id = $1`
+	query := `select p.id,p.name,p.sku,p.slug,p.price,p.brand_id,p.category_id,p.content,p.created_at,p.description,p.old_price,
+       'https://admin.origo.kz/storage/' ||p.id || '/' || m.file_name as file_name from products p, media m
+where m.model_id=p.id and m.model_type='App\Models\Product' and p.is_active=true and deleted_at is null
+  and m.model_id=$1`
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
-		&p.ID, &p.Name, &p.Slug, &p.Description, &p.Price, &p.Stock,
-		&p.CategoryID, &p.ImageURL, &p.IsActive, &p.CreatedAt, &p.UpdatedAt,
+		&p.ID, &p.Name, &p.Sku, &p.Slug, &p.Price, &p.BrandId, &p.CategoryID,
+		&p.Content, &p.CreatedAt, &p.Description, &p.OldPrice, &p.FileName
 	)
 	if err != nil {
 		return nil, err
@@ -93,8 +95,14 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 	}
 	offset := (f.Page - 1) * f.PageSize
 	dataQuery := fmt.Sprintf(
-		`SELECT id, name, slug, description, price, stock, category_id, image_url, is_active, created_at, updated_at
-		 FROM products %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`,
+		`SELECT p.id, p.name, p.slug, p.description, p.price, p.category_id, p.created_at
+		 FROM products p
+         LEFT JOIN media m ON m.model_id = p.id
+    AND m.model_type = 'App\Models\Product'
+    AND m.collection_name = 'preview'
+%s and c.is_active = true
+  AND c.deleted_at IS NULL
+ORDER BY ccreated_at DESC LIMIT $%d OFFSET $%d`,
 		where, argIdx, argIdx+1,
 	)
 	args = append(args, f.PageSize, offset)
@@ -109,8 +117,8 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 	for rows.Next() {
 		var p models.Product
 		if err := rows.Scan(
-			&p.ID, &p.Name, &p.Slug, &p.Description, &p.Price, &p.Stock,
-			&p.CategoryID, &p.ImageURL, &p.IsActive, &p.CreatedAt, &p.UpdatedAt,
+			&p.ID, &p.Name, &p.Slug, &p.Description, &p.Price,
+			&p.CategoryID,&p.CreatedAt,
 		); err != nil {
 			return nil, 0, err
 		}

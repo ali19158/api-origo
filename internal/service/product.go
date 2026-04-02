@@ -8,11 +8,12 @@ import (
 )
 
 type ProductService struct {
-	repo *repository.ProductRepository
+	repo     *repository.ProductRepository
+	adminURL string
 }
 
-func NewProductService(repo *repository.ProductRepository) *ProductService {
-	return &ProductService{repo: repo}
+func NewProductService(repo *repository.ProductRepository, adminURL string) *ProductService {
+	return &ProductService{repo: repo, adminURL: adminURL}
 }
 
 func (s *ProductService) Create(ctx context.Context, p *models.Product) error {
