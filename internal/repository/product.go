@@ -31,19 +31,89 @@ func (r *ProductRepository) Create(ctx context.Context, p *models.Product) error
 
 func (r *ProductRepository) GetByID(ctx context.Context, id int64) (*models.Product, error) {
 	var p models.Product
-	query := `select p.id,p.name,p.sku,p.slug,p.price,p.brand_id,p.category_id,p.content,p.created_at,p.description,p.old_price,
-       'https://admin.origo.kz/storage/' ||p.id || '/' || m.file_name as file_name from products p, media m
-where m.model_id=p.id and m.model_type='App\Models\Product' and p.is_active=true and deleted_at is null
-  and m.model_id=$1`
+	query := `SELECT p.id, p.name, p.sku, p.slug, p.price, p.brand_id, p.category_id,
+	           p.content, p.created_at, p.description, p.old_price
+	    FROM products p
+	    WHERE p.id = $1 AND p.is_active = true AND p.deleted_at IS NULL`
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&p.ID, &p.Name, &p.Sku, &p.Slug, &p.Price, &p.BrandId, &p.CategoryID,
-		&p.Content, &p.CreatedAt, &p.Description, &p.OldPrice, &p.FileName,
+		&p.Content, &p.CreatedAt, &p.Description, &p.OldPrice,
 	)
 	if err != nil {
 		return nil, err
 	}
+
+	// Fetch all images for this product
+	p.Images, err = r.getProductImages(ctx, []int64{id})
+	if err != nil {
+		p.Images = []string{}
+	}
+
 	return &p, nil
+}
+
+// getProductImages fetches image URLs for the given product IDs from the media table.
+// Returns a slice of URLs for a single product, or is used internally to populate multiple products.
+func (r *ProductRepository) getProductImages(ctx context.Context, productIDs []int64) ([]string, error) {
+	if len(productIDs) == 0 {
+		return []string{}, nil
+	}
+
+	query := `SELECT 'https://admin.origo.kz/storage/' || m.model_id || '/' || m.file_name
+	    FROM media m
+	    WHERE m.model_id = ANY($1)
+	      AND m.model_type = 'App\Models\Product'
+	    ORDER BY m.order_column`
+
+	rows, err := r.db.Query(ctx, query, productIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var images []string
+	for rows.Next() {
+		var url string
+		if err := rows.Scan(&url); err != nil {
+			return nil, err
+		}
+		images = append(images, url)
+	}
+	if images == nil {
+		images = []string{}
+	}
+	return images, nil
+}
+
+// getProductImagesMap fetches image URLs for multiple products and returns a map of productID -> []imageURL.
+func (r *ProductRepository) getProductImagesMap(ctx context.Context, productIDs []int64) (map[int64][]string, error) {
+	result := make(map[int64][]string)
+	if len(productIDs) == 0 {
+		return result, nil
+	}
+
+	query := `SELECT m.model_id, 'https://admin.origo.kz/storage/' || m.model_id || '/' || m.file_name
+	    FROM media m
+	    WHERE m.model_id = ANY($1)
+	      AND m.model_type = 'App\Models\Product'
+	    ORDER BY m.model_id, m.order_column`
+
+	rows, err := r.db.Query(ctx, query, productIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var modelID int64
+		var url string
+		if err := rows.Scan(&modelID, &url); err != nil {
+			return nil, err
+		}
+		result[modelID] = append(result[modelID], url)
+	}
+	return result, nil
 }
 
 func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([]models.Product, int, error) {
@@ -54,33 +124,33 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 	)
 
 	if f.CategoryID != nil {
-		conditions = append(conditions, fmt.Sprintf("category_id = $%d", argIdx))
+		conditions = append(conditions, fmt.Sprintf("p.category_id = $%d", argIdx))
 		args = append(args, *f.CategoryID)
 		argIdx++
 	}
 	if f.MinPrice != nil {
-		conditions = append(conditions, fmt.Sprintf("price >= $%d", argIdx))
+		conditions = append(conditions, fmt.Sprintf("p.price >= $%d", argIdx))
 		args = append(args, *f.MinPrice)
 		argIdx++
 	}
 	if f.MaxPrice != nil {
-		conditions = append(conditions, fmt.Sprintf("price <= $%d", argIdx))
+		conditions = append(conditions, fmt.Sprintf("p.price <= $%d", argIdx))
 		args = append(args, *f.MaxPrice)
 		argIdx++
 	}
 	if f.Search != nil {
-		conditions = append(conditions, fmt.Sprintf("(name ILIKE $%d OR description ILIKE $%d)", argIdx, argIdx))
+		conditions = append(conditions, fmt.Sprintf("(p.name ILIKE $%d OR p.description ILIKE $%d)", argIdx, argIdx))
 		args = append(args, "%"+*f.Search+"%")
 		argIdx++
 	}
 
-	where := ""
-	if len(conditions) > 0 {
-		where = "WHERE " + strings.Join(conditions, " AND ")
-	}
+	// Always filter active and non-deleted
+	conditions = append(conditions, "p.is_active = true", "p.deleted_at IS NULL")
+
+	where := "WHERE " + strings.Join(conditions, " AND ")
 
 	// Count total
-	countQuery := "SELECT COUNT(*) FROM products " + where
+	countQuery := "SELECT COUNT(*) FROM products p " + where
 	var total int
 	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, err
@@ -97,12 +167,8 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 	dataQuery := fmt.Sprintf(
 		`SELECT p.id, p.name, p.slug, p.description, p.price, p.category_id, p.created_at
 		 FROM products p
-         LEFT JOIN media m ON m.model_id = p.id
-    AND m.model_type = 'App\Models\Product'
-    AND m.collection_name = 'preview'
-%s and p.is_active = true
-  AND p.deleted_at IS NULL
-ORDER BY p.created_at DESC LIMIT $%d OFFSET $%d`,
+		 %s
+		 ORDER BY p.created_at DESC LIMIT $%d OFFSET $%d`,
 		where, argIdx, argIdx+1,
 	)
 	args = append(args, f.PageSize, offset)
@@ -114,15 +180,35 @@ ORDER BY p.created_at DESC LIMIT $%d OFFSET $%d`,
 	defer rows.Close()
 
 	var products []models.Product
+	var productIDs []int64
 	for rows.Next() {
 		var p models.Product
 		if err := rows.Scan(
 			&p.ID, &p.Name, &p.Slug, &p.Description, &p.Price,
-			&p.CategoryID,&p.CreatedAt,
+			&p.CategoryID, &p.CreatedAt,
 		); err != nil {
 			return nil, 0, err
 		}
 		products = append(products, p)
+		productIDs = append(productIDs, p.ID)
+	}
+
+	// Fetch images for all products in one query
+	imagesMap, err := r.getProductImagesMap(ctx, productIDs)
+	if err != nil {
+		// If images fail, still return products with empty images
+		for i := range products {
+			products[i].Images = []string{}
+		}
+		return products, total, nil
+	}
+
+	for i := range products {
+		if imgs, ok := imagesMap[products[i].ID]; ok {
+			products[i].Images = imgs
+		} else {
+			products[i].Images = []string{}
+		}
 	}
 
 	return products, total, nil

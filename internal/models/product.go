@@ -23,7 +23,7 @@ type Product struct {
 	Content string `json:"content"`
 	OldPrice json.RawMessage `json:"old_price"`
 	FileName string `json:"file_name"`
-	
+	Images   []string `json:"images"`
 }
 type ProductFilter struct {
 	CategoryID *int64
