@@ -74,7 +74,7 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	products, total, err := h.svc.List(r.Context(), filter)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "failed to list products")
+		writeError(w, http.StatusInternalServerError, fmt.Errorf("failed to list products: %w", err).Error())
 		return
 	}
 
