@@ -169,7 +169,7 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 		`SELECT p.id, p.name, p.slug, p.description, p.price, p.category_id, p.is_active, p.created_at, p.is_soon
 		 FROM products p
 		 WHERE p.is_active = true AND p.deleted_at IS NULL%s
-		 ORDER BY p.created_at DESC LIMIT $%d OFFSET $%d`,
+		 ORDER BY p.is_soon ASC, p.created_at DESC LIMIT $%d OFFSET $%d`,
 		extraWhere, argIdx, argIdx+1,
 	)
 	args = append(args, f.PageSize, offset)
