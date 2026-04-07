@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/online-shop/internal/models"
 	"github.com/online-shop/internal/repository"
 )
 
