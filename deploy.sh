@@ -37,6 +37,14 @@ case "$1" in
   update)
     echo "🔄 Обновление origo_api..."
     git pull origin main
+    docker compose -f $COMPOSE_FILE build api
+    docker compose -f $COMPOSE_FILE up -d
+    echo "✅ Обновление завершено!"
+    ;;
+
+  update-no-cache)
+    echo "🔄 Обновление origo_api..."
+    git pull origin main
     docker compose -f $COMPOSE_FILE build --no-cache api
     docker compose -f $COMPOSE_FILE up -d
     echo "✅ Обновление завершено!"
