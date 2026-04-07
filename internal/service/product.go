@@ -12,10 +12,11 @@ const productModelType = `App\Models\Product`
 type ProductService struct {
 	repo     *repository.ProductRepository
 	mediaSvc *MediaService
+	attrSvc  *AttributeService
 }
 
-func NewProductService(repo *repository.ProductRepository, mediaSvc *MediaService) *ProductService {
-	return &ProductService{repo: repo, mediaSvc: mediaSvc}
+func NewProductService(repo *repository.ProductRepository, mediaSvc *MediaService, attrSvc *AttributeService) *ProductService {
+	return &ProductService{repo: repo, mediaSvc: mediaSvc, attrSvc: attrSvc}
 }
 
 // enrichImages fetches media via MediaService and maps them to product image URLs.
@@ -55,9 +56,20 @@ func (s *ProductService) GetByID(ctx context.Context, id int64) (*models.Product
 	if err != nil {
 		return nil, err
 	}
+
+	// Enrich with images
 	products := []models.Product{*p}
 	s.enrichImages(ctx, products)
 	*p = products[0]
+
+	// Enrich with attributes
+	attrs, err := s.attrSvc.GetByProductID(ctx, id)
+	if err != nil {
+		p.Attributes = []models.ProductAttribute{}
+	} else {
+		p.Attributes = attrs
+	}
+
 	return p, nil
 }
 

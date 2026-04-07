@@ -34,11 +34,13 @@ func main() {
 	//orderRepo := repository.NewOrderRepository(pool)
 	categoryRepo := repository.NewCategoryRepository(pool)
 	mediaRepo := repository.NewMediaRepository(pool)
+	attrRepo := repository.NewAttributeRepository(pool)
 
 	// Services
 	mediaSvc := service.NewMediaService(mediaRepo, cfg.AdminURL)
+	attrSvc := service.NewAttributeService(attrRepo)
 	userSvc := service.NewUserService(userRepo, cfg.JWT)
-	productSvc := service.NewProductService(productRepo, mediaSvc)
+	productSvc := service.NewProductService(productRepo, mediaSvc, attrSvc)
 	//orderSvc := service.NewOrderService(orderRepo, productRepo)
 	categorySvc := service.NewCategoryService(categoryRepo, mediaSvc)
 

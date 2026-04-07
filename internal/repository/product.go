@@ -32,14 +32,14 @@ func (r *ProductRepository) Create(ctx context.Context, p *models.Product) error
 func (r *ProductRepository) GetByID(ctx context.Context, id int64) (*models.Product, error) {
 	var p models.Product
 	query := `SELECT p.id, p.name, p.sku, p.slug, p.price, p.brand_id,b.name as brand_name, p.category_id,
-	           p.content, p.created_at, p.description, p.old_price, p.is_soon
+	           p.content, p.created_at, p.description, p.old_price, p.is_soon, p.is_featured
 	    FROM products p
 		left join brands b on b.id=p.brand_id
 	    WHERE p.id = $1 AND p.is_active = true AND p.deleted_at IS NULL`
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&p.ID, &p.Name, &p.Sku, &p.Slug, &p.Price, &p.BrandId, &p.BrandName, &p.CategoryID,
-		&p.Content, &p.CreatedAt, &p.Description, &p.OldPrice, &p.IsSoon,
+		&p.Content, &p.CreatedAt, &p.Description, &p.OldPrice, &p.IsSoon, &p.IsFeatured,
 	)
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 	}
 	offset := (f.Page - 1) * f.PageSize
 	dataQuery := fmt.Sprintf(
-		`SELECT p.id, p.name, p.slug, p.description, p.price, p.category_id, p.is_active, p.created_at, p.is_soon
+		`SELECT p.id, p.name, p.slug, p.description, p.price, p.category_id, p.is_active, p.created_at, p.is_soon, p.is_featured
 		 FROM products p
 		 WHERE p.is_active = true AND p.deleted_at IS NULL%s
 		 ORDER BY p.is_soon ASC, p.created_at DESC LIMIT $%d OFFSET $%d`,
@@ -122,6 +122,7 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 		if err := rows.Scan(
 			&p.ID, &p.Name, &p.Slug, &p.Description, &p.Price,
 			&p.CategoryID, &p.IsActive, &p.CreatedAt, &p.IsSoon,
+			&p.IsFeatured,
 		); err != nil {
 			return nil, 0, err
 		}
