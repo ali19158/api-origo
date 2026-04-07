@@ -43,7 +43,7 @@ func (h *CategoryHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	cat, err := h.svc.GetByID(r.Context(), id)
 	if err != nil {
-		writeError(w, http.StatusNotFound, "category not found")
+		writeError(w, http.StatusNotFound, fmt.Errorf("category not found %w", err).Error())
 		return
 	}
 
