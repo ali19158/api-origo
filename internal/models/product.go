@@ -19,6 +19,7 @@ type Product struct {
 	UpdatedAt   time.Time        `json:"updated_at"`
 	BrandName   *json.RawMessage `json:"brand_name"`
 	IsSoon      bool             `json:"is_soon"`
+	IsFeatured  bool             `json:"is_featured"`
 	Sku         string           `json:"sku"`
 	BrandId     int64            `json:"brand_id"`
 	Content     *json.RawMessage `json:"content"`
@@ -32,6 +33,7 @@ type ProductFilter struct {
 	MinPrice   *float64
 	MaxPrice   *float64
 	Search     *string
+	IsFeatured *bool
 	Page       int
 	PageSize   int
 }

@@ -75,6 +75,11 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 		args = append(args, "%"+*f.Search+"%")
 		argIdx++
 	}
+	if f.IsFeatured != nil {
+		conditions = append(conditions, fmt.Sprintf("p.is_featured = $%d", argIdx))
+		args = append(args, *f.IsFeatured)
+		argIdx++
+	}
 
 	extraWhere := ""
 	if len(conditions) > 0 {

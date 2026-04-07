@@ -72,6 +72,10 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 	if v := q.Get("search"); v != "" {
 		filter.Search = &v
 	}
+	if v := q.Get("is_featured"); v != "" {
+		b, _ := strconv.ParseBool(v)
+		filter.IsFeatured = &b
+	}
 
 	products, total, err := h.svc.List(r.Context(), filter)
 	if err != nil {
