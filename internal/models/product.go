@@ -26,6 +26,7 @@ type Product struct {
 	FileName    string           `json:"file_name"`
 	Images      []string         `json:"images"`
 }
+
 type ProductFilter struct {
 	CategoryID *int64
 	MinPrice   *float64

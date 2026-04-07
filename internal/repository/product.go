@@ -45,76 +45,7 @@ func (r *ProductRepository) GetByID(ctx context.Context, id int64) (*models.Prod
 		return nil, err
 	}
 
-	// Fetch all images for this product
-	p.Images, err = r.getProductImages(ctx, []int64{id})
-	if err != nil {
-		p.Images = []string{}
-	}
-
 	return &p, nil
-}
-
-// getProductImages fetches image URLs for the given product IDs from the media table.
-// Returns a slice of URLs for a single product, or is used internally to populate multiple products.
-func (r *ProductRepository) getProductImages(ctx context.Context, productIDs []int64) ([]string, error) {
-	if len(productIDs) == 0 {
-		return []string{}, nil
-	}
-
-	query := `SELECT 'https://admin.origo.kz/storage/' || m.id || '/' || m.file_name
-	    FROM media m
-	    WHERE m.model_id = ANY($1)
-	      AND m.model_type = 'App\Models\Product'
-	    ORDER BY m.order_column`
-
-	rows, err := r.db.Query(ctx, query, productIDs)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var images []string
-	for rows.Next() {
-		var url string
-		if err := rows.Scan(&url); err != nil {
-			return nil, err
-		}
-		images = append(images, url)
-	}
-	if images == nil {
-		images = []string{}
-	}
-	return images, nil
-}
-
-// getProductImagesMap fetches image URLs for multiple products and returns a map of productID -> []imageURL.
-func (r *ProductRepository) getProductImagesMap(ctx context.Context, productIDs []int64) (map[int64][]string, error) {
-	result := make(map[int64][]string)
-	if len(productIDs) == 0 {
-		return result, nil
-	}
-
-	query := `SELECT m.model_id, 'https://admin.origo.kz/storage/' || m.id || '/' || m.file_name
-	    FROM media m
-	    WHERE m.model_id = ANY($1)
-	      AND m.model_type = 'App\Models\Product'
-	    ORDER BY m.model_id, m.order_column`
-
-	rows, err := r.db.Query(ctx, query, productIDs)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var modelID int64
-		var url string
-		if err := rows.Scan(&modelID, &url); err != nil {
-			return nil, err
-		}
-		result[modelID] = append(result[modelID], url)
-	}
-	return result, nil
 }
 
 func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([]models.Product, int, error) {
@@ -181,7 +112,6 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 	defer rows.Close()
 
 	var products []models.Product
-	var productIDs []int64
 	for rows.Next() {
 		var p models.Product
 		if err := rows.Scan(
@@ -191,25 +121,6 @@ func (r *ProductRepository) List(ctx context.Context, f models.ProductFilter) ([
 			return nil, 0, err
 		}
 		products = append(products, p)
-		productIDs = append(productIDs, p.ID)
-	}
-
-	// Fetch images for all products in one query
-	imagesMap, err := r.getProductImagesMap(ctx, productIDs)
-	if err != nil {
-		// If images fail, still return products with empty images
-		for i := range products {
-			products[i].Images = []string{}
-		}
-		return products, total, nil
-	}
-
-	for i := range products {
-		if imgs, ok := imagesMap[products[i].ID]; ok {
-			products[i].Images = imgs
-		} else {
-			products[i].Images = []string{}
-		}
 	}
 
 	return products, total, nil

@@ -2,25 +2,42 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/online-shop/internal/models"
 	"github.com/online-shop/internal/repository"
 )
 
+const categoryModelType = `App\Models\Category`
+
 type CategoryService struct {
 	repo     *repository.CategoryRepository
-	adminURL string
+	mediaSvc *MediaService
 }
 
-func NewCategoryService(repo *repository.CategoryRepository, adminURL string) *CategoryService {
-	return &CategoryService{repo: repo, adminURL: adminURL}
+func NewCategoryService(repo *repository.CategoryRepository, mediaSvc *MediaService) *CategoryService {
+	return &CategoryService{repo: repo, mediaSvc: mediaSvc}
 }
 
-func (s *CategoryService) enrichPreview(c *models.Category) {
-	if c.MediaID != nil && c.MediaFileName != nil {
-		url := fmt.Sprintf("%s/storage/%d/%s", s.adminURL, *c.MediaID, *c.MediaFileName)
-		c.Preview = &url
+// enrichPreviews fetches preview images for categories via MediaService.
+func (s *CategoryService) enrichPreviews(ctx context.Context, categories []models.Category) {
+	if len(categories) == 0 {
+		return
+	}
+
+	ids := make([]int64, len(categories))
+	for i, c := range categories {
+		ids[i] = c.ID
+	}
+
+	previewMap, err := s.mediaSvc.GetFirstImageURL(ctx, ids, categoryModelType)
+	if err != nil {
+		return
+	}
+
+	for i := range categories {
+		if url, ok := previewMap[categories[i].ID]; ok {
+			categories[i].Preview = &url
+		}
 	}
 }
 
@@ -33,7 +50,9 @@ func (s *CategoryService) GetByID(ctx context.Context, id int64) (*models.Catego
 	if err != nil {
 		return nil, err
 	}
-	s.enrichPreview(c)
+	cats := []models.Category{*c}
+	s.enrichPreviews(ctx, cats)
+	*c = cats[0]
 	return c, nil
 }
 
@@ -42,9 +61,7 @@ func (s *CategoryService) List(ctx context.Context) ([]models.Category, error) {
 	if err != nil {
 		return nil, err
 	}
-	for i := range cats {
-		s.enrichPreview(&cats[i])
-	}
+	s.enrichPreviews(ctx, cats)
 	return cats, nil
 }
 

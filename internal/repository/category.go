@@ -27,11 +27,7 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*models.Cat
 	var c models.Category
 
 	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at, c.description, c.is_soon
-	                 m.id, m.file_name
 	          FROM categories c
-	          LEFT JOIN media m ON m.model_id = c.id
-	              AND m.model_type = 'App\Models\Category'
-	              AND m.collection_name = 'preview'
 	          WHERE c.id = $1
 	              AND c.is_active = true
 	              AND c.deleted_at IS NULL
@@ -39,7 +35,6 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*models.Cat
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&c.ID, &c.Name, &c.Slug, &c.ParentID, &c.CreatedAt, &c.Description, &c.IsSoon,
-		&c.MediaID, &c.MediaFileName,
 	)
 	if err != nil {
 		return nil, err
@@ -49,12 +44,8 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*models.Cat
 }
 
 func (r *CategoryRepository) List(ctx context.Context) ([]models.Category, error) {
-	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at, c.description, c.is_soon,
-	                 m.id, m.file_name
+	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at, c.description, c.is_soon
 	          FROM categories c
-	          LEFT JOIN media m ON m.model_id = c.id
-	              AND m.model_type = 'App\Models\Category'
-	              AND m.collection_name = 'preview'
 	          WHERE c.is_active = true
 	              AND c.deleted_at IS NULL
 	          ORDER BY c.is_soon ASC, c.id`
@@ -71,7 +62,6 @@ func (r *CategoryRepository) List(ctx context.Context) ([]models.Category, error
 
 		if err := rows.Scan(
 			&c.ID, &c.Name, &c.Slug, &c.ParentID, &c.CreatedAt, &c.Description, &c.IsSoon,
-			&c.MediaID, &c.MediaFileName,
 		); err != nil {
 			return nil, err
 		}
