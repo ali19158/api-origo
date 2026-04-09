@@ -17,12 +17,12 @@ func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 
 func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 	query := `
-		INSERT INTO users (email, password, first_name, last_name, role)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO users (email, password, first_name, name, last_name, role)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, created_at, updated_at`
 
 	return r.db.QueryRow(ctx, query,
-		user.Email, user.Password, user.FirstName, user.LastName, user.Role,
+		user.Email, user.Password, user.FirstName, user.FirstName, user.LastName, user.Role,
 	).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
 }
 

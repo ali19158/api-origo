@@ -1,0 +1,155 @@
+### ===========================
+### API Origo — HTTP Client File
+### ===========================
+### Используйте с расширением REST Client (VS Code)
+### или IntelliJ HTTP Client
+
+@baseUrl = http://localhost:8080/api/v1
+@origoUrl = https://api.origo.kz/api/v1
+@token = YOUR_JWT_TOKEN_HERE
+
+
+### ───────────────────────────
+### Health Check
+### ───────────────────────────
+
+### Health
+GET http://localhost:8080/health
+
+
+### ───────────────────────────
+### Auth
+### ───────────────────────────
+
+### Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@qtxample.com",
+  "password": "password1234",
+  "first_name": "Test",
+  "last_name": "User"
+}
+
+###
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+
+### ───────────────────────────
+### Products (public)
+### ───────────────────────────
+
+### List products
+GET {{baseUrl}}/products?page=1&page_size=20
+
+###
+
+### List products with filters
+GET {{baseUrl}}/products?page=1&page_size=10&category_id=1&min_price=100&max_price=50000&search=телефон
+
+###
+
+### Get product by ID
+GET {{baseUrl}}/products/1
+
+
+### ───────────────────────────
+### Products (admin — requires auth)
+### ───────────────────────────
+
+### Create product
+POST {{baseUrl}}/products
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "New Product",
+  "slug": "new-product",
+  "description": "Product description",
+  "price": 9990,
+  "stock": 50,
+  "category_id": 1,
+  "image_url": "https://example.com/image.jpg",
+  "is_active": true
+}
+
+###
+
+### Update product
+PUT {{baseUrl}}/products/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Updated Product",
+  "slug": "updated-product",
+  "description": "Updated description",
+  "price": 12990,
+  "stock": 30,
+  "category_id": 1,
+  "image_url": "https://example.com/image-new.jpg",
+  "is_active": true
+}
+
+###
+
+### Delete product
+DELETE {{baseUrl}}/products/1
+Authorization: Bearer {{token}}
+
+
+### ───────────────────────────
+### Categories (public)
+### ───────────────────────────
+
+### List categories
+GET {{baseUrl}}/categories
+
+###
+
+### Get category by ID
+GET {{baseUrl}}/categories/1
+
+
+### ───────────────────────────
+### Categories (admin — requires auth)
+### ───────────────────────────
+
+### Create category
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Electronics",
+  "slug": "electronics",
+  "description": "All electronics"
+}
+
+###
+
+### Update category
+PUT {{baseUrl}}/categories/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Updated Category",
+  "slug": "updated-category",
+  "description": "Updated description"
+}
+
+###
+
+### Delete category
+DELETE {{baseUrl}}/categories/1
+Authorization: Bearer {{token}}
