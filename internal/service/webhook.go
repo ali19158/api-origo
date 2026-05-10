@@ -33,6 +33,7 @@ func (s *WebhookService) SendTelegram(title, project, level, webURL string) erro
 		title, project, level, webURL,
 	)
 
+	log.Printf("[INFO] sending telegram: title=%s project=%s", title, project)
 	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
 	resp, err := http.PostForm(apiURL, url.Values{
 		"chat_id":    {chatID},
