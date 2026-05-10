@@ -82,7 +82,7 @@ func (r *CategoryRepository) ListRootCategories(ctx context.Context) ([]models.C
 	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at, c.description, c.is_soon
 	          FROM categories c
 	          WHERE c.parent_id IS NULL
-	              AND c.is_active = true
+-- 	              AND c.is_active = true
 	              AND c.deleted_at IS NULL
 	          ORDER BY c.is_soon ASC, c.id`
 
