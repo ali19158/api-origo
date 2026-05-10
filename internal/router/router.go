@@ -41,7 +41,7 @@ func New(
 		r.Get("/categories", categoryH.List)
 		r.Get("/categories/tree", categoryH.ListTree)
 		r.Get("/categories/{id}", categoryH.GetByID)
-		r.Get("/categories/{category_id}/subcategories", categoryH.ListSubcategories)
+		r.Get("/categories/{id}/subcategories", categoryH.ListSubcategories)
 
 		// Authenticated routes
 		r.Group(func(r chi.Router) {

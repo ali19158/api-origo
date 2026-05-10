@@ -73,7 +73,7 @@ func (h *CategoryHandler) ListRootCategories(w http.ResponseWriter, r *http.Requ
 
 // ListSubcategories handles GET /api/v1/categories/{category_id}/subcategories — direct children.
 func (h *CategoryHandler) ListSubcategories(w http.ResponseWriter, r *http.Request) {
-	parentID, err := strconv.ParseInt(chi.URLParam(r, "category_id"), 10, 64)
+	parentID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid category id")
 		return

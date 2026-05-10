@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log"
 
 	"github.com/online-shop/internal/models"
 	"github.com/online-shop/internal/repository"
@@ -79,6 +80,7 @@ func (s *CategoryService) ListRootCategories(ctx context.Context) ([]models.Cate
 func (s *CategoryService) ListSubcategories(ctx context.Context, parentID int64) ([]models.Category, error) {
 	cats, err := s.repo.ListSubcategories(ctx, parentID)
 	if err != nil {
+		log.Printf("ListSubcategories error: %s, parent id: %d", err.Error(), parentID)
 		return nil, err
 	}
 	s.enrichPreviews(ctx, cats)
