@@ -22,7 +22,7 @@ type SentryWebhook struct {
 	Data   struct {
 		Issue struct {
 			Title   string `json:"title"`
-			WebURL  string `json:"web_url"`
+			WebURL  string `json:"permalink"`
 			Project struct {
 				Name string `json:"name"`
 				Slug string `json:"slug"`
@@ -49,7 +49,7 @@ func (h *WebhookHandler) SentryWebhook(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[INFO] sentry webhook payload: %+v", payload)
 
-	if payload.Action != "created" {
+	if payload.Action != "created" && payload.Action != "resolved" && payload.Action != "unresolved" {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
