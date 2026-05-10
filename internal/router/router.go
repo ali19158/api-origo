@@ -11,10 +11,12 @@ import (
 
 func New(
 	jwtSecret string,
+	webhookSecret string,
 	userH *handler.UserHandler,
 	productH *handler.ProductHandler,
 	//orderH *handler.OrderHandler,
 	categoryH *handler.CategoryHandler,
+	webhookH *handler.WebhookHandler,
 ) *chi.Mux {
 	r := chi.NewRouter()
 
@@ -27,6 +29,11 @@ func New(
 	// Health check
 	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte(`{"status":"ok"}`))
+	})
+
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.SentryWebhookAuth(webhookSecret))
+		r.Post("/sentry-webhook", webhookH.SentryWebhook)
 	})
 
 	// Public routes

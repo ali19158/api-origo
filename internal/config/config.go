@@ -10,10 +10,12 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	JWT      JWTConfig
-	AdminURL string
+	Server         ServerConfig
+	Database       DatabaseConfig
+	JWT            JWTConfig
+	AdminURL       string
+	TelegramToken  string
+	TelegramChatID string
 }
 
 type ServerConfig struct {
@@ -62,7 +64,9 @@ func Load() (*Config, error) {
 			Secret:          getEnv("JWT_SECRET", "change-me"),
 			ExpirationHours: expHours,
 		},
-		AdminURL: getEnv("ADMIN_URL", "https://admin.origo.kz"),
+		AdminURL:       getEnv("ADMIN_URL", "https://admin.origo.kz"),
+		TelegramToken:  getEnv("TELEGRAM_TOKEN", ""),
+		TelegramChatID: getEnv("TELEGRAM_LOG_CHAT_ID", ""),
 	}, nil
 }
 

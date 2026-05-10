@@ -23,7 +23,7 @@ func main() {
 	}
 
 	// Sentry
-	sentryHandler := config.InitSentry()
+	sentryCfg := config.InitSentry()
 	defer config.FlushSentry()
 
 	// logger
@@ -52,19 +52,28 @@ func main() {
 	productSvc := service.NewProductService(productRepo, mediaSvc, attrSvc)
 	//orderSvc := service.NewOrderService(orderRepo, productRepo)
 	categorySvc := service.NewCategoryService(categoryRepo, mediaSvc)
+	webhookSvc := service.NewWebhookService(cfg.TelegramToken, cfg.TelegramChatID)
 
 	// Handlers
 	userH := handler.NewUserHandler(userSvc)
 	productH := handler.NewProductHandler(productSvc)
 	//orderH := handler.NewOrderHandler(orderSvc)
 	categoryH := handler.NewCategoryHandler(categorySvc)
+	webhookH := handler.NewWebhookHandler(webhookSvc)
+
+	webhookSecret := ""
+	if sentryCfg != nil {
+		webhookSecret = sentryCfg.WebhookSecret
+	}
 
 	// Router
-	r := router.New(cfg.JWT.Secret, userH, productH, categoryH)
+	r := router.New(
+		cfg.JWT.Secret, webhookSecret, userH, productH, categoryH, webhookH,
+	)
 
 	var sHandler http.Handler = r
-	if sentryHandler != nil {
-		sHandler = sentryHandler.Handle(r)
+	if sentryCfg != nil && sentryCfg.Handler != nil {
+		sHandler = sentryCfg.Handler.Handle(r)
 	}
 
 	// Start server

@@ -8,7 +8,12 @@ import (
 	sentryhttp "github.com/getsentry/sentry-go/http"
 )
 
-func InitSentry() *sentryhttp.Handler {
+type SentryConfig struct {
+	Handler       *sentryhttp.Handler
+	WebhookSecret string
+}
+
+func InitSentry() *SentryConfig {
 	dsn := getEnv("SENTRY_DSN", "")
 	if dsn == "" {
 		log.Println("SENTRY_DSN not set, skipping Sentry initialization")
@@ -25,9 +30,14 @@ func InitSentry() *sentryhttp.Handler {
 		log.Fatalf("sentry.Init: %s", err)
 	}
 
-	return sentryhttp.New(sentryhttp.Options{
+	handler := sentryhttp.New(sentryhttp.Options{
 		Repanic: true,
 	})
+
+	return &SentryConfig{
+		Handler:       handler,
+		WebhookSecret: getEnv("SENTRY_WEBHOOK_SECRET", ""),
+	}
 }
 
 func FlushSentry() {
