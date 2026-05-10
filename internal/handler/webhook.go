@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/online-shop/internal/logger"
@@ -33,7 +34,7 @@ type SentryWebhook struct {
 
 func (h *WebhookHandler) SentryWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
-		logger.Default.Warn("Empty body")
+		logger.Default.Warn("SentryWebhook Empty body")
 		http.Error(w, "empty body", http.StatusBadRequest)
 		return
 	}
@@ -45,6 +46,8 @@ func (h *WebhookHandler) SentryWebhook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
+
+	log.Printf("[INFO] sentry webhook payload: %+v", payload)
 
 	if payload.Action != "created" {
 		w.WriteHeader(http.StatusOK)
