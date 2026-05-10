@@ -22,6 +22,10 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	// Sentry
+	sentryHandler := config.InitSentry()
+	defer config.FlushSentry()
+
 	// logger
 	logger.Init(context.Background())
 
@@ -57,10 +61,6 @@ func main() {
 
 	// Router
 	r := router.New(cfg.JWT.Secret, userH, productH, categoryH)
-
-	// Sentry
-	sentryHandler := config.InitSentry()
-	defer config.FlushSentry()
 
 	var sHandler http.Handler = r
 	if sentryHandler != nil {
