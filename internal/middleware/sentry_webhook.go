@@ -7,6 +7,8 @@ import (
 	"encoding/hex"
 	"io"
 	"net/http"
+
+	"github.com/online-shop/internal/logger"
 )
 
 func SentryWebhookAuth(secret string) func(http.Handler) http.Handler {
@@ -14,6 +16,7 @@ func SentryWebhookAuth(secret string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
+				logger.Default.Warn("error reading body: %v", err.Error())
 				http.Error(w, "bad request", http.StatusBadRequest)
 				return
 			}
