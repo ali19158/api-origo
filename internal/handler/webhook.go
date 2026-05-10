@@ -2,8 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"io"
-	"log"
 	"net/http"
 
 	"github.com/online-shop/internal/logger"
@@ -40,9 +38,6 @@ func (h *WebhookHandler) SentryWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer func() { _ = r.Body.Close() }()
-
-	body, _ := io.ReadAll(r.Body)
-	log.Printf("[INFO] telegram response, body: %s", string(body))
 
 	var payload SentryWebhook
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
