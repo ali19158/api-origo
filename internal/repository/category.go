@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/online-shop/internal/models"
@@ -44,12 +44,16 @@ func (r *CategoryRepository) GetByID(ctx context.Context, id int64) (*models.Cat
 	return &c, nil
 }
 
-func (r *CategoryRepository) List(ctx context.Context) ([]models.Category, error) {
+func (r *CategoryRepository) List(ctx context.Context, onlyActive bool) ([]models.Category, error) {
 	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at, c.description, c.is_soon
 	          FROM categories c
-	          WHERE c.is_active = true
-	              AND c.deleted_at IS NULL
-	          ORDER BY c.is_soon ASC, c.id`
+	          WHERE c.deleted_at IS NULL`
+
+	if onlyActive {
+		query += fmt.Sprintf(" AND c.is_active = true")
+	}
+
+	query += ` ORDER BY c.is_soon ASC, c.id`
 
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
@@ -106,7 +110,6 @@ func (r *CategoryRepository) ListRootCategories(ctx context.Context) ([]models.C
 
 // ListSubcategories returns all direct children of the given parent category.
 func (r *CategoryRepository) ListSubcategories(ctx context.Context, parentID int64) ([]models.Category, error) {
-	log.Printf("repo ListSubcategories parent id: %d", parentID)
 	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at, c.description, c.is_soon
 	          FROM categories c
 	          WHERE c.parent_id = $1

@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
-	"log"
 
 	"github.com/online-shop/internal/models"
 	"github.com/online-shop/internal/repository"
@@ -59,7 +57,7 @@ func (s *CategoryService) GetByID(ctx context.Context, id int64) (*models.Catego
 }
 
 func (s *CategoryService) List(ctx context.Context) ([]models.Category, error) {
-	cats, err := s.repo.List(ctx)
+	cats, err := s.repo.List(ctx, true)
 	if err != nil {
 		return nil, err
 	}
@@ -80,8 +78,6 @@ func (s *CategoryService) ListRootCategories(ctx context.Context) ([]models.Cate
 // ListSubcategories returns direct children of the given parent category with previews.
 func (s *CategoryService) ListSubcategories(ctx context.Context, parentID int64) ([]models.Category, error) {
 	cats, err := s.repo.ListSubcategories(ctx, parentID)
-	raw, _ := json.Marshal(cats)
-	log.Printf("svc ListSubcategories parent id: %d, raw data: %s", parentID, raw)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +88,7 @@ func (s *CategoryService) ListSubcategories(ctx context.Context, parentID int64)
 // ListTree returns the full category tree: root categories with nested children.
 // Fetches all categories in one query and builds the tree in memory.
 func (s *CategoryService) ListTree(ctx context.Context) ([]models.CategoryNode, error) {
-	cats, err := s.repo.List(ctx)
+	cats, err := s.repo.List(ctx, false)
 	if err != nil {
 		return nil, err
 	}
