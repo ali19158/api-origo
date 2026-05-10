@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 
@@ -40,14 +41,15 @@ func (h *WebhookHandler) SentryWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { _ = r.Body.Close() }()
 
+	body, _ := io.ReadAll(r.Body)
+	log.Printf("[INFO] telegram response, body: %s", string(body))
+
 	var payload SentryWebhook
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		logger.Default.Warn("SentryWebhook payload %v, %s", err.Error(), r.Body)
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
-
-	log.Printf("[INFO] sentry webhook payload: %+v", payload)
 
 	if payload.Action != "created" && payload.Action != "resolved" && payload.Action != "unresolved" {
 		w.WriteHeader(http.StatusOK)
