@@ -22,8 +22,11 @@ type SentryWebhook struct {
 		Issue struct {
 			Title   string `json:"title"`
 			WebURL  string `json:"web_url"`
-			Project string `json:"project"`
-			Level   string `json:"level"`
+			Project struct {
+				Name string `json:"name"`
+				Slug string `json:"slug"`
+			} `json:"project"`
+			Level string `json:"level"`
 		} `json:"issue"`
 	} `json:"data"`
 }
@@ -49,7 +52,7 @@ func (h *WebhookHandler) SentryWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	issue := payload.Data.Issue
-	if err := h.service.SendTelegram(issue.Title, issue.Project, issue.Level, issue.WebURL); err != nil {
+	if err := h.service.SendTelegram(issue.Title, issue.Project.Name, issue.Level, issue.WebURL); err != nil {
 		http.Error(w, "telegram error", http.StatusInternalServerError)
 		return
 	}
