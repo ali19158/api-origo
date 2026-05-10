@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"github.com/online-shop/internal/config"
 	"github.com/online-shop/internal/database"
 	"github.com/online-shop/internal/handler"
+	"github.com/online-shop/internal/logger"
 	"github.com/online-shop/internal/repository"
 	"github.com/online-shop/internal/router"
 	"github.com/online-shop/internal/service"
@@ -19,6 +21,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
+
+	// logger
+	logger.Init(context.Background())
 
 	// Connect to PostgreSQL
 	pool, err := database.NewPostgresPool(cfg.Database.DSN())
@@ -53,10 +58,19 @@ func main() {
 	// Router
 	r := router.New(cfg.JWT.Secret, userH, productH, categoryH)
 
+	// Sentry
+	sentryHandler := config.InitSentry()
+	defer config.FlushSentry()
+
+	var sHandler http.Handler = r
+	if sentryHandler != nil {
+		sHandler = sentryHandler.Handle(r)
+	}
+
 	// Start server
 	addr := fmt.Sprintf(":%s", cfg.Server.Port)
 	log.Printf("server starting on %s", addr)
-	if err := http.ListenAndServe(addr, r); err != nil {
+	if err := http.ListenAndServe(addr, sHandler); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }

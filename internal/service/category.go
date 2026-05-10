@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/online-shop/internal/logger"
 	"github.com/online-shop/internal/models"
 	"github.com/online-shop/internal/repository"
 )
@@ -31,6 +32,7 @@ func (s *CategoryService) enrichPreviews(ctx context.Context, categories []model
 
 	previewMap, err := s.mediaSvc.GetFirstImageURL(ctx, ids, categoryModelType)
 	if err != nil {
+		logger.Default.Error("[svc.category.enrichPreviews] error: %s", err.Error())
 		return
 	}
 
@@ -59,6 +61,7 @@ func (s *CategoryService) GetByID(ctx context.Context, id int64) (*models.Catego
 func (s *CategoryService) List(ctx context.Context) ([]models.Category, error) {
 	cats, err := s.repo.List(ctx, true)
 	if err != nil {
+		logger.Default.Error("[svc.category.List] error: %s", err.Error())
 		return nil, err
 	}
 	s.enrichPreviews(ctx, cats)
@@ -69,6 +72,7 @@ func (s *CategoryService) List(ctx context.Context) ([]models.Category, error) {
 func (s *CategoryService) ListRootCategories(ctx context.Context) ([]models.Category, error) {
 	cats, err := s.repo.ListRootCategories(ctx)
 	if err != nil {
+		logger.Default.Error("[svc.category.ListRootCategories] error: %s", err.Error())
 		return nil, err
 	}
 	s.enrichPreviews(ctx, cats)
@@ -79,6 +83,7 @@ func (s *CategoryService) ListRootCategories(ctx context.Context) ([]models.Cate
 func (s *CategoryService) ListSubcategories(ctx context.Context, parentID int64) ([]models.Category, error) {
 	cats, err := s.repo.ListSubcategories(ctx, parentID)
 	if err != nil {
+		logger.Default.Error("[svc.category.ListSubcategories] error: %s", err.Error())
 		return nil, err
 	}
 	s.enrichPreviews(ctx, cats)
@@ -90,6 +95,7 @@ func (s *CategoryService) ListSubcategories(ctx context.Context, parentID int64)
 func (s *CategoryService) ListTree(ctx context.Context) ([]models.CategoryNode, error) {
 	cats, err := s.repo.List(ctx, false)
 	if err != nil {
+		logger.Default.Error("[svc.category.ListTree] error: %s", err.Error())
 		return nil, err
 	}
 	s.enrichPreviews(ctx, cats)

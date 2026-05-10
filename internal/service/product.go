@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/online-shop/internal/logger"
 	"github.com/online-shop/internal/models"
 	"github.com/online-shop/internal/repository"
 )
@@ -32,6 +33,7 @@ func (s *ProductService) enrichImages(ctx context.Context, products []models.Pro
 
 	imagesMap, err := s.mediaSvc.GetImageURLs(ctx, ids, productModelType)
 	if err != nil {
+		logger.Default.Error("[svc.product.enrichImages] error: %s", err.Error())
 		for i := range products {
 			products[i].Images = []string{}
 		}
@@ -54,6 +56,7 @@ func (s *ProductService) Create(ctx context.Context, p *models.Product) error {
 func (s *ProductService) GetByID(ctx context.Context, id int64) (*models.Product, error) {
 	p, err := s.repo.GetByID(ctx, id)
 	if err != nil {
+		logger.Default.Error("[svc.product.GetByID] error: %s", err.Error())
 		return nil, err
 	}
 
@@ -76,6 +79,7 @@ func (s *ProductService) GetByID(ctx context.Context, id int64) (*models.Product
 func (s *ProductService) List(ctx context.Context, filter models.ProductFilter) ([]models.Product, int, error) {
 	products, total, err := s.repo.List(ctx, filter)
 	if err != nil {
+		logger.Default.Error("[svc.product.List] error: %s", err.Error())
 		return nil, 0, err
 	}
 	s.enrichImages(ctx, products)

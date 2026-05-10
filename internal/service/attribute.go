@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/online-shop/internal/logger"
 	"github.com/online-shop/internal/models"
 	"github.com/online-shop/internal/repository"
 )
@@ -19,6 +20,7 @@ func NewAttributeService(repo *repository.AttributeRepository) *AttributeService
 func (s *AttributeService) GetByProductID(ctx context.Context, productID int64) ([]models.ProductAttribute, error) {
 	attrs, err := s.repo.GetByProductID(ctx, productID)
 	if err != nil {
+		logger.Default.Error("[svc.attribute.GetByProductID] error: %s", err.Error())
 		return nil, err
 	}
 	if attrs == nil {

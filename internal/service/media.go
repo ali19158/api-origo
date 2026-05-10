@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/online-shop/internal/logger"
 	"github.com/online-shop/internal/repository"
 )
 
@@ -30,6 +31,7 @@ func (s *MediaService) GetImageURLs(ctx context.Context, modelIDs []int64, model
 
 	items, err := s.repo.GetByModelIDs(ctx, modelIDs, modelType)
 	if err != nil {
+		logger.Default.Error("[svc.media.GetImageURLs] error: %s", err.Error())
 		return nil, err
 	}
 
@@ -50,6 +52,7 @@ func (s *MediaService) GetFirstImageURL(ctx context.Context, modelIDs []int64, m
 
 	items, err := s.repo.GetByModelIDs(ctx, modelIDs, modelType)
 	if err != nil {
+		logger.Default.Error("[svc.media.GetFirstImageURL] error: %s", err.Error())
 		return nil, err
 	}
 
