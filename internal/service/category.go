@@ -50,6 +50,7 @@ func (s *CategoryService) Create(ctx context.Context, c *models.Category) error 
 func (s *CategoryService) GetByID(ctx context.Context, id int64) (*models.Category, error) {
 	c, err := s.repo.GetByID(ctx, id)
 	if err != nil {
+		logger.Default.Error("[svc.category.GetByID] error: %s", err.Error())
 		return nil, err
 	}
 	cats := []models.Category{*c}
