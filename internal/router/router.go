@@ -39,7 +39,9 @@ func New(
 		r.Get("/products", productH.List)
 		r.Get("/products/{id}", productH.GetByID)
 		r.Get("/categories", categoryH.List)
+		r.Get("/categories/tree", categoryH.ListTree)
 		r.Get("/categories/{id}", categoryH.GetByID)
+		r.Get("/categories/{category_id}/subcategories", categoryH.ListSubcategories)
 
 		// Authenticated routes
 		r.Group(func(r chi.Router) {
@@ -65,6 +67,11 @@ func New(
 				//r.Put("/orders/{id}/status", orderH.UpdateStatus)
 			})
 		})
+	})
+
+	// v2 routes
+	r.Route("/api/v2", func(r chi.Router) {
+		r.Get("/categories", categoryH.ListRootCategories)
 	})
 
 	return r

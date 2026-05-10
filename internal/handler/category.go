@@ -60,6 +60,45 @@ func (h *CategoryHandler) List(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, cats)
 }
 
+// ListRootCategories handles GET /api/v2/categories — only root categories (parent_id IS NULL).
+func (h *CategoryHandler) ListRootCategories(w http.ResponseWriter, r *http.Request) {
+	cats, err := h.svc.ListRootCategories(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, fmt.Errorf("failed to list root categories: %w", err).Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, cats)
+}
+
+// ListSubcategories handles GET /api/v1/categories/{category_id}/subcategories — direct children.
+func (h *CategoryHandler) ListSubcategories(w http.ResponseWriter, r *http.Request) {
+	parentID, err := strconv.ParseInt(chi.URLParam(r, "category_id"), 10, 64)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid category id")
+		return
+	}
+
+	cats, err := h.svc.ListSubcategories(r.Context(), parentID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, fmt.Errorf("failed to list subcategories: %w", err).Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, cats)
+}
+
+// ListTree handles GET /api/v1/categories/tree — full category tree with nested children.
+func (h *CategoryHandler) ListTree(w http.ResponseWriter, r *http.Request) {
+	tree, err := h.svc.ListTree(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, fmt.Errorf("failed to build category tree: %w", err).Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, tree)
+}
+
 func (h *CategoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {

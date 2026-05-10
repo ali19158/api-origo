@@ -72,6 +72,68 @@ func (r *CategoryRepository) List(ctx context.Context) ([]models.Category, error
 	return categories, nil
 }
 
+// ListRootCategories returns only categories where parent_id IS NULL.
+func (r *CategoryRepository) ListRootCategories(ctx context.Context) ([]models.Category, error) {
+	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at, c.description, c.is_soon
+	          FROM categories c
+	          WHERE c.parent_id IS NULL
+	              AND c.is_active = true
+	              AND c.deleted_at IS NULL
+	          ORDER BY c.is_soon ASC, c.id`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []models.Category
+	for rows.Next() {
+		var c models.Category
+
+		if err := rows.Scan(
+			&c.ID, &c.Name, &c.Slug, &c.ParentID, &c.CreatedAt, &c.Description, &c.IsSoon,
+		); err != nil {
+			return nil, err
+		}
+
+		categories = append(categories, c)
+	}
+
+	return categories, nil
+}
+
+// ListSubcategories returns all direct children of the given parent category.
+func (r *CategoryRepository) ListSubcategories(ctx context.Context, parentID int64) ([]models.Category, error) {
+	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at, c.description, c.is_soon
+	          FROM categories c
+	          WHERE c.parent_id = $1
+	              AND c.is_active = true
+	              AND c.deleted_at IS NULL
+	          ORDER BY c.is_soon ASC, c.id`
+
+	rows, err := r.db.Query(ctx, query, parentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []models.Category
+	for rows.Next() {
+		var c models.Category
+
+		if err := rows.Scan(
+			&c.ID, &c.Name, &c.Slug, &c.ParentID, &c.CreatedAt, &c.Description, &c.IsSoon,
+		); err != nil {
+			return nil, err
+		}
+
+		categories = append(categories, c)
+	}
+
+	return categories, nil
+}
+
 func (r *CategoryRepository) Update(ctx context.Context, c *models.Category) error {
 	query := `UPDATE categories SET name=$1, slug=$2, parent_id=$3 WHERE id=$4`
 	_, err := r.db.Exec(ctx, query, c.Name, c.Slug, c.ParentID, c.ID)
