@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -41,6 +43,9 @@ func (s *WebhookService) SendTelegram(title, project, level, webURL string) erro
 		return err
 	}
 	defer func() { _ = resp.Body.Close() }()
+
+	body, _ := io.ReadAll(resp.Body)
+	log.Printf("[INFO] telegram response: %s", string(body))
 
 	return nil
 }
