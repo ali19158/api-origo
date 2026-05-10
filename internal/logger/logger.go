@@ -3,6 +3,8 @@ package logger
 import (
 	"context"
 	"log"
+	"os"
+	"time"
 
 	"github.com/getsentry/sentry-go"
 )
@@ -36,4 +38,11 @@ func (l *Logger) Warn(msg string, args ...any) {
 func (l *Logger) Error(msg string, args ...any) {
 	log.Printf("[ERROR] "+msg, args...)
 	l.sentry.Error().Emitf(msg, args...)
+}
+
+func (l *Logger) Fatal(msg string, args ...any) {
+	log.Printf("[FATAL] "+msg, args...)
+	l.sentry.Fatal().Emitf(msg, args...)
+	sentry.Flush(2 * time.Second)
+	os.Exit(1)
 }

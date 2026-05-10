@@ -69,8 +69,8 @@ func main() {
 
 	// Start server
 	addr := fmt.Sprintf(":%s", cfg.Server.Port)
-	log.Printf("server starting on %s", addr)
+	logger.Default.Info("server starting on %s", addr)
 	if err := http.ListenAndServe(addr, sHandler); err != nil {
-		log.Fatalf("server error: %v", err)
+		logger.Default.Fatal("server error: %v", err)
 	}
 }
