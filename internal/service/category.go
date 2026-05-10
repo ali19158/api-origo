@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
 	"github.com/online-shop/internal/models"
@@ -79,8 +80,9 @@ func (s *CategoryService) ListRootCategories(ctx context.Context) ([]models.Cate
 // ListSubcategories returns direct children of the given parent category with previews.
 func (s *CategoryService) ListSubcategories(ctx context.Context, parentID int64) ([]models.Category, error) {
 	cats, err := s.repo.ListSubcategories(ctx, parentID)
+	raw, _ := json.Marshal(cats)
+	log.Printf("svc ListSubcategories parent id: %d, raw data: %s", parentID, raw)
 	if err != nil {
-		log.Printf("ListSubcategories error: %s, parent id: %d", err.Error(), parentID)
 		return nil, err
 	}
 	s.enrichPreviews(ctx, cats)

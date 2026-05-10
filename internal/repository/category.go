@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/online-shop/internal/models"
@@ -105,6 +106,7 @@ func (r *CategoryRepository) ListRootCategories(ctx context.Context) ([]models.C
 
 // ListSubcategories returns all direct children of the given parent category.
 func (r *CategoryRepository) ListSubcategories(ctx context.Context, parentID int64) ([]models.Category, error) {
+	log.Printf("repo ListSubcategories parent id: %d", parentID)
 	query := `SELECT c.id, c.name, c.slug, c.parent_id, c.created_at, c.description, c.is_soon
 	          FROM categories c
 	          WHERE c.parent_id = $1
