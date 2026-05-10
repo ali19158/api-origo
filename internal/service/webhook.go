@@ -18,7 +18,7 @@ func NewWebhookService(telegramToken, telegramChatID string) *WebhookService {
 	}
 }
 
-func (s *WebhookService) SendTelegram(title, project, level, webURL string) error {
+func (s *WebhookService) SendTelegram(title, project, level, status, shortID, count, permalink string) error {
 	token := s.telegramToken
 	chatID := s.telegramChatID
 
@@ -27,8 +27,8 @@ func (s *WebhookService) SendTelegram(title, project, level, webURL string) erro
 	}
 
 	msg := fmt.Sprintf(
-		"🚨 *%s*\n\nПроект: %s\nУровень: %s\n\n🔗 %s",
-		title, project, level, webURL,
+		"🔔 *%s*\n\nПроект: %s\nУровень: %s\nСтатус: %s\nID: %s\nКол-во: %s\n\n🔗 %s",
+		title, project, level, status, shortID, count, permalink,
 	)
 
 	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
