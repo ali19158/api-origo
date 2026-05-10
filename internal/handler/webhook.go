@@ -57,7 +57,7 @@ func (h *WebhookHandler) SentryWebhook(w http.ResponseWriter, r *http.Request) {
 	issue := payload.Data.Issue
 	if err := h.service.SendTelegram(
 		issue.Title,
-		issue.Project.Name,
+		issue.Project.Slug,
 		issue.Level,
 		issue.Status,
 		issue.ShortID,
